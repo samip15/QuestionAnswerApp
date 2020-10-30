@@ -31,18 +31,48 @@ class _QuizPageState extends State<QuizPage> {
 
   QuestionBrain _questionBrain = QuestionBrain();
 
+  int _rightAnswer = 0;
+
   void checkAnswer({bool userAnswer}) {
     setState(() {
       if (userAnswer == _questionBrain.answerResult) {
         _scoreKeeper.add(
           Icon(Icons.check, color: Colors.green, size: 30),
         );
+        _rightAnswer++;
       } else {
         _scoreKeeper.add(
           Icon(Icons.close, color: Colors.red, size: 30),
         );
       }
-      _questionBrain.nextQuestions();
+      if (_questionBrain.isFinished()) {
+        // game over dialog
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (dCtx) {
+              return AlertDialog(
+                title: Text("Game Over"),
+                content: Text(
+                    "You have answered all the questions : Score: $_rightAnswer / ${_questionBrain.questionLength}"),
+                actions: [
+                  RaisedButton(
+                    onPressed: () {
+                      Navigator.pop(dCtx);
+                      setState(() {
+                        _rightAnswer = 0;
+                      });
+                    },
+                    child: Text("Play Again"),
+                  )
+                ],
+              );
+            });
+        _questionBrain.reset();
+        _scoreKeeper.clear();
+      } else {
+        _questionBrain.nextQuestions();
+      }
     });
   }
 
@@ -51,6 +81,13 @@ class _QuizPageState extends State<QuizPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Padding(
+          padding: EdgeInsets.only(top: 30, left: 15),
+          child: Text(
+            "Score:$_rightAnswer / ${_questionBrain.questionLength}",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
         Expanded(
           flex: 5,
           child: Center(
@@ -91,8 +128,11 @@ class _QuizPageState extends State<QuizPage> {
             ),
           ),
         ),
-        Row(
-          children: _scoreKeeper,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _scoreKeeper,
+          ),
         )
       ],
     );
