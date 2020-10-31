@@ -133,7 +133,7 @@ class _QuizPageState extends State<QuizPage> {
           child: Row(
             children: _scoreKeeper,
           ),
-        )
+        ),
       ],
     );
   }
